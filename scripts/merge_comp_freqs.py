@@ -31,9 +31,9 @@ def skip_heading(f):
 	next(f)
 	
 def read_heading_from(r):
-	p = r.next()
+	p = next(r)
 	while p == []:
-		p = r.next()
+		p = next(r)
 	return p
 
 def validate_content_by(heading, expected):
@@ -43,7 +43,7 @@ def validate_content_by(heading, expected):
 		raise MergeError('Erroneous content. Expected = ' + expected + ', got = ' + ','.join(heading))
 
 def parse_csv(merged, filename, parse_action, expected_format):
-	with open(filename, 'rb') as csvfile:
+	with open(filename, 'rt') as csvfile:
 		r = csv.reader(csvfile, delimiter=',')
 		heading = read_heading_from(r)
 		validate_content_by(heading, expected_format)
