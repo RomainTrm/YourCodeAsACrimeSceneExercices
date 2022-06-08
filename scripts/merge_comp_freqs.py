@@ -51,10 +51,10 @@ def parse_csv(merged, filename, parse_action, expected_format):
 			parse_action(merged, row)
 
 def write_csv(stats):
-	print 'module,revisions,code'
+	print('module,revisions,code')
 	for s in stats:
 		name, (f,c) = s
-		print name + ',' + f + ',' + c
+		print(name + ',' + f + ',' + c)
 
 def as_os_aware_path(name):
 	return os.path.normpath(name)
