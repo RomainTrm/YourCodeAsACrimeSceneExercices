@@ -12,6 +12,7 @@ import argparse
 import csv
 import json
 import sys
+import re
 
 class MergeError(Exception):
 	def __init__(self, message):
@@ -36,10 +37,10 @@ class Merged(object):
 		self._all_modules_with_complexity[name] = complexity
 
 def write_csv(stats):
-	print 'module,revisions,code'
+	print('module,revisions,code')
 	for s in stats:
 		name, (f,c) = s
-		print name + ',' + f + ',' + c
+		print(name + ',' + f + ',' + c)
 	
 def parse_complexity(merged, row):
 	name = row[1][2:]
@@ -71,11 +72,11 @@ def validate_content_by(heading, expected):
 
 def parse_csv(filename, parse_action, expected_format=None):
 	def read_heading_from(r):
-		p = r.next()
+		p = next(r)
 		while p == []:
-			p = r.next()
+			p = next(r)
 		return p
-	with open(filename, 'rb') as csvfile:
+	with open(filename, 'rt') as csvfile:
 		r = csv.reader(csvfile, delimiter=',')
 		heading = read_heading_from(r)
 		validate_content_by(heading, expected_format)
@@ -86,7 +87,7 @@ class StructuralElement(object):
 		self.name = name
 		self.complexity = complexity
 	def parts(self):
-		return self.name.split('/')
+		return re.split(r"[\/\\]", self.name)
 
 def parse_structural_element(csv_row):
 	name = csv_row[1][2:]
@@ -171,7 +172,7 @@ def generate_structure_from(modules, weight_calculator):
 ######################################################################
 
 def write_json(result):
-	print json.dumps(result)
+	print(json.dumps(result))
 
 ######################################################################
 ## Main
