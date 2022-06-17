@@ -102,3 +102,12 @@ Here we'll be looking at a prepared example; To launch hotspots visualization:
 - Then open `http://localhost:8888/hibzoomable.html`
 
 To transform Code Maat's CSV output into a Json for D3.js, use: `python csv_as_enclosure_json.py -h`
+
+-----
+
+## Chapter 5 : Judge Hotspots with the Power of Names
+
+For cognitive reasons, we put names on things to reduce the load and still express complex concepts: this is called chunking.  
+Names can be good indicators to identify hotspots: are they descriptive (ex: `TcpListener`) or clumsy (ex: `StateManager`)?  
+Combined with change frequency and number of lines of code, names can help us reducing the number of potential offenders.  
+The author highlight this as an heuristic, it's not perfect and you can still have false positives.  
