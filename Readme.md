@@ -111,3 +111,33 @@ For cognitive reasons, we put names on things to reduce the load and still expre
 Names can be good indicators to identify hotspots: are they descriptive (ex: `TcpListener`) or clumsy (ex: `StateManager`)?  
 Combined with change frequency and number of lines of code, names can help us reducing the number of potential offenders.  
 The author highlight this as an heuristic, it's not perfect and you can still have false positives.  
+
+-----
+
+## Chapter 6 : Calculate Complexity Trends from Your Code's Shape
+
+Finding hotspot and acting on them may require several passes, so we need to look at the evolution of the code.  
+Here we'll be using code's shape via indentation to mesure hotspots complexity and trends over time. Heavy indentation might highlight complex conditionnal flows.  
+
+### Whitespace analysis of complexity
+
+On the Hibernate folder used on the previous chapter:
+`python scripts/complexity_analysis.py hibernate-core/src/main/java/org/hibernate/cfg/Configuration.java`  
+
+### Analyze Compexity Trends in Hotspots
+
+[Manny Lehman](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29)['s laws of software evolution](https://en.wikipedia.org/wiki/Lehman%27s_laws_of_software_evolution): the more you change the code and add feature, the more code's complexity increases unless specific work is done to reduce it.  
+
+Now, to analyze complexity trends over a period:
+`python scripts/git_complexity_trend.py --start ccc087b --end 46c962e --file hibernate-core/src/main/java/org/hibernate/cfg/Configuration.java`  
+Then you can use the spreadsheet of your choice to visualize trends with graphs.  
+
+When total complexity increases, it can mean more indentation (and complexity) or more lines of code.  
+Standard deviation (sd column) describes code consitency, the lower the better.  
+For a high total complexity, a low standard deviation means a lot of code and a low overall complexity. Mean should return a similar trend.  
+
+Complexity trend can be:  
+
+- Increasing: That's a waring sign
+- Decreasing: Some refactoring have been done to reduce complexity
+- Stable: few modifications other time

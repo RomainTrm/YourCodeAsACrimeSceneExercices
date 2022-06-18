@@ -1,2 +1,3 @@
 tools/*
 work/*
+*/__pycache__
