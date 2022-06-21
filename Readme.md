@@ -141,3 +141,14 @@ Complexity trend can be:
 - Increasing: That's a waring sign
 - Decreasing: Some refactoring have been done to reduce complexity
 - Stable: few modifications other time
+
+-----
+
+## Chapter 7 : Treat Your Code As a Cooperative Witness
+
+Now, we're looking at high-level design of the system, we're chasing hidden dependencies and learning the concept of _temporal coupling_.  
+
+Human brain suffers from a lot biases, the way you're asked some questions may result in different answers as the question influence memory access and associations, and even create false memories.  
+That's why we need to extract real evolution of the code from the code base and our source control tools.  
+
+You have _temporal coupling_ when modules change together, note that those modules may not have a static dependency visible through the compiler.  
