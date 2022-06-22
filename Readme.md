@@ -152,3 +152,52 @@ Human brain suffers from a lot biases, the way you're asked some questions may r
 That's why we need to extract real evolution of the code from the code base and our source control tools.  
 
 You have _temporal coupling_ when modules change together, note that those modules may not have a static dependency visible through the compiler.  
+
+-----
+
+## Chapter 8 : Detect Architectural Decay
+
+### Analyze Temporal Coupling
+
+Sum of Coupling: looking at how many times a module has been coupled to anothers in a commit and sums it up.  
+Mesure the Sum of Coupling: `maat -l maat_evo.log -c git -a soc`  
+Mesure the Temporal Coupling: `maat -l maat_evo.log -c git -a coupling`  
+The output is composed of:  
+
+- entity: the coupled module
+- coupled: the couterpart module
+- degree: the percentage of shared commits where these modules are coupled  
+- average-revs: a weighted number of total revisions for these modules
+
+Note: you can have a high average-revs and a low degree, it means there's a lot of revisions, but only few are shared by the two modules. At the oposite, high degree and low average-revs means a strong coupling but stable modules.  
+
+Suggested tool: [Evolution Radar](http://www.inf.usi.ch/phd/dambros/tools/evoradar.php)
+
+Yet, Temporal Coupling suffers from limitations and biases. The code base may be maintained by several teams, including a timespan to measure coupling might be necessary (see chapter 12). Also, some important coupling occurs between commits, then you have to dig into the code. Finally, renaming module resets counters when using Code Maat, it can sounds problematic, but it's also a good signal that some refactoring happened.  
+
+### Catch Architectural Decay
+
+[Manny Lehman](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29) also expressed another law: it states a program that is used _undergoes continual change or becomes progressively less used_.  
+
+We're going to use a new repo for the analysis.  
+Clone the repo: `git clone https://github.com/SirCmpwn/Craft.Net.git`  
+Extract logs: `git log --pretty=format:'[%h] %an %ad %s' --date=short --numstat --before=2014-08-08 > craft_evo_complete.log`  
+Mesure the Sum of Coupling: `maat -l craft_evo_complete.log -c git -a soc`  
+
+First module observed, _MinecraftServer_ seems to have a lot of coupling. We're going to run a trend analysis on this module.  
+
+First activity for this module is in 2012, so we extract logs for first year as a first period: `git log --pretty=format:'[%h] %an %ad %s' --date=short --numstat --before=2013-01-01 > craft_evo_130101.log`  
+Then we run a temporal coupling analysis: `maat -l craft_evo_130101.log -c git -a coupling > craft_coupling_130101.csv`  
+
+Then we repeat this process for a period over 2013 to 2014:  
+
+- `git log --pretty=format:'[%h] %an %ad %s' --date=short --numstat --after=2013-01-01 --before=2014-08-08 > craft_evo_140808.log`  
+- `maat -l craft_evo_140808.log -c git -a coupling > craft_coupling_140808.csv`  
+
+We can now open both csv into a spreadsheet app and remove everything not coupled to _MinecraftServer_.  
+
+### React to Structural Trends
+
+Now we can use the enclosure diagram (see chapter 4) and compare visually results.  
+Dependencies that are close to eachothers isn't an issue, we're looking for temporal coupling across (package/project) boundaries, with modules on distant parts of the system.  
+You can run such an analysis as a routine on your project (each iteration for example) and spot early decays.  
