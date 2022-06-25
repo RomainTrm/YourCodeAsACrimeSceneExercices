@@ -90,7 +90,7 @@ Proceed as we did for Code Maat (Chapter 3), extract frequencies, the number of 
 ### Explore the Visualization
 
 The circle-packing visualization is from [D3.js](http://d3js.org), it's using the [Zoomable Circle Packing](http://bl.ocks.org/mbostock/7607535) algorithm.  
-Note: this is just one tool among others, the author also highligts:
+_Note_: this is just one tool among others, the author also highligts:
 
 - Spreadsheets: an easy way to exploit CSV outputs.
 - [R programming langage](http://r-project.org): a langage designed for statistical computation and data visualization.
@@ -169,7 +169,7 @@ The output is composed of:
 - degree: the percentage of shared commits where these modules are coupled  
 - average-revs: a weighted number of total revisions for these modules
 
-Note: you can have a high average-revs and a low degree, it means there's a lot of revisions, but only few are shared by the two modules. At the oposite, high degree and low average-revs means a strong coupling but stable modules.  
+_Note_: you can have a high average-revs and a low degree, it means there's a lot of revisions, but only few are shared by the two modules. At the oposite, high degree and low average-revs means a strong coupling but stable modules.  
 
 Suggested tool: [Evolution Radar](http://www.inf.usi.ch/phd/dambros/tools/evoradar.php)
 
@@ -201,3 +201,56 @@ We can now open both csv into a spreadsheet app and remove everything not couple
 Now we can use the enclosure diagram (see chapter 4) and compare visually results.  
 Dependencies that are close to eachothers isn't an issue, we're looking for temporal coupling across (package/project) boundaries, with modules on distant parts of the system.  
 You can run such an analysis as a routine on your project (each iteration for example) and spot early decays.  
+
+-----
+
+## Chapter 9 : Build a Safety Net for Your Architecture
+
+### Know What's in an Architecture
+
+Automated tests act as a safety net for the software, it's supposed to allow developers to modify the software and ensure there's no regression.  
+But tests create dependencies with the tested code, so we have to choose those dependencies carefully. The author argues that automated tests should be considered like any other module of the system and designed with the same attention.  
+
+### Analyse the Evolution on a Sytem Level
+
+We've looked at _temporal coupling_ between invdividual modules, now we're focusing on system boundaries between production code and automated tests.  
+
+To specify to Code Maat production and test code, we've to specify a _transformation_.  
+Create a file `maat_src_test_boundaries.txt` in the repository root, then type in:  
+
+```text
+src/code_maat => Code
+test/code_maat => Test
+```  
+
+_Note_: this file must use LF endline sequence instead of CRLF.  
+
+Finally, perform the analysis: `maat -l maat_evo.log -c git -a coupling -g maat_src_test_boundaries.txt`  
+
+We can observe a high level of coupling between code and tests, but tests regroup different kinds of tests. We must make a distinction.  
+
+### Differentiate Between the Level of Tests
+
+Now, put in `maat_src_test_boundaries.txt` file:  
+
+```text
+src/code_maat => Code
+test/code_maat/analysis => Analysis Test
+test/code_maat/dataset => Dataset Test
+test/code_maat/end_to_end => End to end Test
+test/code_maat/parsers => Parsers Test
+```  
+
+Then re-run the analysis.  
+
+On this example, Analysis & Parsers tests are unit tests, they change aproximatively 40% of the time with the code. That sounds reasonable. Datastet isn't displayed has its numbers are below the default threshold.  
+End to end tests also changes 40% of the time, but they're supposed to be more stable. That's a bad signal.  
+In this specific case, the author explains he changed several times the output format, but didn't encapsulate it as an implementation detail. So every time he made a change, he had to modify the end to end tests.  
+
+### Create a Safety Net for Your Automated Tests
+
+You can monitor revisions for each boundaries: `maat -l maat_evo.log -c git -a revisions -g maat_src_test_boundaries.txt`  
+By collecting several sample points, we can start to see trends. We can also observe the evolution of code/test change ratio.  
+Every time the ratio evolves to a high test changes, run coupling and hotspot analysis to help you understand the problem.  
+
+We can also spot clusters of tests that change together, it's a sign that some test refactoring is needed.  
