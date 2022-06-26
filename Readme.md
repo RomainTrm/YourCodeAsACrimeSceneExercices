@@ -254,3 +254,85 @@ By collecting several sample points, we can start to see trends. We can also obs
 Every time the ratio evolves to a high test changes, run coupling and hotspot analysis to help you understand the problem.  
 
 We can also spot clusters of tests that change together, it's a sign that some test refactoring is needed.  
+
+-----
+
+## Chapter 10 : Use Beauty as a Guiding Principle
+
+### Learn Why Attractiveness Matters
+
+Here, beauty should be interpreted as "the absence of ugliness".  
+
+### Write Beautiful Code
+
+Translated to code, the absence of ugliness means the absence of special cases.  
+A beautiful code is a consistent code in terms of code style, conventions, level of expression, etc.  
+Every time the code base divert, it breaks the reader's expectations and introduces cognitive cost. The result is a code base harder to understand and riskier to modify.  
+This principle also applies at the architecture level, and is even more important than the local coding constructs.  
+
+### Avoid Surprises in Your Architecture
+
+Code Maat is build following the _Pipes and Filters_ pattern, so we should expect a low temporal coupling between filters.  
+
+In a file `maat_pipes_filters_boundaries.txt`:  
+
+```text
+src/code_maat/parsers => Parse
+src/code_maat/analysis => Analyze
+src/code_maat/output => Output
+src/code_maat/app => Application
+```  
+
+The perform the temporal coupling analysis: `maat -l maat_evo.log -c git -a coupling -g maat_pipes_filters_boundaries.txt`  
+
+Result doesn't highlight any strong coupling between filters, but two of them are coupled to the _Application_ component.  
+The reason is: _Application_ contains conditionnal logic to choose the parsers and the analysis to execute. It could be a problem as the software can grow with more options.  
+
+### Analyze Layered Architectures
+
+The transformation file doesn't have to mirror code stucture. You can ignore minor utility modules and try to focus on what can break your target architecture.  
+
+New study case with [NopCommerce](www.nopcommerce.com) open source product. It's build with a MVC pattern.  
+
+### Find Surpring Change Patterns
+
+Clone the new repo: `git clone https://github.com/nopSolutions/nopCommerce.git`  
+Then extract logs: `git log --pretty=format:'[%h] %an %ad %s' --date=short --numstat --after=2014-01-01 --before=2014-09-25 > nop_evo_2014.log`  
+
+_Note_: You may encounter the following error:  
+
+```text
+warning: inexact rename detection was skipped due to too many files.
+warning: you may want to set your diff.renameLimit variable to at least 1954 and retry the command.
+```
+
+Use `git config diff.renamelimit 1954` to solve it.  
+
+Use the following transformation file `arch_boundaries.txt`:
+
+```text
+src/Presentation/Nop.Web/Administration/Models      => Admin Models
+src/Presentation/Nop.Web/Administration/Views       => Admin Views
+src/Presentation/Nop.Web/Administration/Controllers => Admin Controllers
+src/Libraries/Nop.Services                          => Services
+src/Libraries/Nop.Code                              => Core
+src/Libraries/Nop.Data                              => Data Access
+src/Presentation/Nop.Web/Models                     => Models
+src/Presentation/Nop.Web/Views                      => Views
+src/Presentation/Nop.Web/Controllers                => Controllers
+```
+
+And run coupling analysis: `maat -l nop_evo_2014.log -c git -a coupling -g arch_boundaries.txt`  
+
+_Note_: Few commit messages contained several lines, I had to manually fix them on `nop_evo_2014.log` in order to execute the analysis without failure.  
+
+The result highlight several coupling, a lot of them from admin modules.  
+
+Run a Hotspots analysis: `maat -l nop_evo_2014.log -c git -a revisions -g arch_boundaries.txt`  
+
+It shows us that the _Service_ layer is the most volatile, and temporal coupling tells us that 35% of those revisions also modify _Admin Controllers_. But with this data, we can't know if _Service_ leads to _Admin Controllers_ modifications or if it is the other way around.  
+
+### Expand Your Analyses
+
+You can now use _Temporal Coupling_ as a early warning system. Define the rules you want to protect, then run the analysis on a regular basis.  
+If the trend evoles in an unexpected way, run a hotspots analysis to investigate.  
