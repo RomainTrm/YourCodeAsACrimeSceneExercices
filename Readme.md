@@ -336,3 +336,52 @@ It shows us that the _Service_ layer is the most volatile, and temporal coupling
 
 You can now use _Temporal Coupling_ as a early warning system. Define the rules you want to protect, then run the analysis on a regular basis.  
 If the trend evoles in an unexpected way, run a hotspots analysis to investigate.  
+
+-----
+
+## Chapter 11 : Norms, Groups, and False Serial Killers
+
+Social interactions and team organization are as influent as software architecture for producing bugs and decay.  
+
+### Learn Why the Right People Don't Speak Up
+
+_Process loss_ is the theory that groups can't operate at 100% efficiency. There's losses by coordination and motivations.  
+In software development we must accept some losses as systems are too big to be developed by a single person.  
+
+Social biases make you influenced by others, by their attitude, how confident they look like, etc.  
+
+### Understand Pluralistic Ignorance
+
+_Pluralistic Ignorance_ is when everyone reject privately a rule but thinks that others support it. It can lead to teams following rules that no one wants to follow.  
+An individual can also influence decisions just by repeating his opinion. Just by hearing it more often, we tend to find it more valuable.  
+
+Social biases are hard to avoid, the best ways to do so are:  
+
+- ask questions
+- talk to people
+- use data to support decisions
+
+If you're in a leadership position, there are additionnal solutions:  
+
+- use an outside expert to review decisions
+- let subgroups work independently on the same problem
+- avoid advocating a specific solution early in the discussions
+- discuss worst-case scenarios and build team risk awareness
+- plan a second meeting to reconsider decisions made on the first one
+
+All those strategies are useful to avoid _groupthink_. It is when a group has suppressed all internal forms of dissent, it leads groups suffering from a false sense of consensus, ignoring alternatives and risks.  
+
+### Witness Groupthing in Action
+
+Some workshops like brainstorming are supposed to promote high group creativity. The reality is: they generate a lot of social biases and tend to produce less creative groups than expected.  
+
+### Discover Your Team's Modus Operandi
+
+Every team as its own way to work. Even if it can't be observed clearly, using commit logs can provide some useful information.  
+
+To extract only commit logs: `git log --pretty='%s'`  
+You can then use tools to visualize them with clouds representations, [here](https://monkeylearn.com/blog/word-visualization/) some examples.  
+
+The more a word is present, the more the team is doing it. You can potentially double check your discoveries with a _temporal coupling_ analysis.  
+
+**Friendly reminder**: these kind of analysis is tools made to understand and support decisions, it doesn't replace real discussions and team interactions.  
