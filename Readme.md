@@ -369,7 +369,7 @@ If you're in a leadership position, there are additionnal solutions:
 - discuss worst-case scenarios and build team risk awareness
 - plan a second meeting to reconsider decisions made on the first one
 
-All those strategies are useful to avoid _groupthink_. It is when a group has suppressed all internal forms of dissent, it leads groups suffering from a false sense of consensus, ignoring alternatives and risks.  
+All those strategies are useful to avoid _groupthink_. _Groupthink_ is when a group has suppressed all internal forms of dissent, it leads groups suffering from a false sense of consensus, ignoring alternatives and risks.  
 
 ### Witness Groupthing in Action
 
@@ -385,3 +385,66 @@ You can then use tools to visualize them with clouds representations, [here](htt
 The more a word is present, the more the team is doing it. You can potentially double check your discoveries with a _temporal coupling_ analysis.  
 
 **Friendly reminder**: these kind of analysis is tools made to understand and support decisions, it doesn't replace real discussions and team interactions.  
+
+-----
+
+## Chapter 12 : Discover Organizational Metrics in Your Codebase
+
+### Let's Work in the Communication Business
+
+_"Adding manpower to a later software project makes it later"_ - [The Mythical Man-Month: Essays on Software Engineering](https://www.goodreads.com/book/show/13629.The_Mythical_Man_Month)  
+
+Software development is an intellectual work that is hard to parallelize, adding more people to the team won't accelerate the developments. Even worst, the more people you add to a team, the more you increase coordination cost, and those tend to increase exponentially.  
+Additionally, a large group suffers from _process loss_ and less responsibility for the overall goal.  
+
+### Find the Social Problems of Scale
+
+Adding developers isn't necessarily a bad thing as long as architecture allows them to work on separate pieces of code. Troubles start when some _hotspots_ accumulate responsibilities and force developers to edit the same code for different reasons.  
+
+We can run an author analysis: `maat -l hib_evo.log -c -git -a authors`  
+The result is the modules with the number of authors and revisions.  
+
+A study on Windows Vista's code shows that organizational structure add a huge impact on the overall code quality.  
+The number of authors was one social metric, and it outperformed technical metrics such as code complexity or coverage to predict defects.  
+
+### Mesure Temporal Coupling over Organizational Boundaries
+
+If a module is highlighted by both _hotspot_ and _authors_ analysis, then we're facing a piece of code that is probably tricky and affects most developers: a good candidate for some rework!  
+
+_Conway's law_: _"Any organization that designs a system will inevitably produce a design whose structure is a cop of organization's communication structure."_  
+This famous law can be interpreted in two distinct ways:
+
+- "If you have four groups working on a compiler, you'll get a 4-pass compiler"
+- The reverse one: how to structure organization to match a specific architecture?
+
+To analyze _temporal coupling_ over organizational boundaries, we need to consider commits on the same day as part of a logical change set.  
+To do so: `maat -l hib_evo.log -c -git -a coupling --temporal-period 1`  
+With this analysis, we measure the probability of coupled modules to change within the same day.  
+
+Next step is to identify main developers of coupled modules. We can then compare it to the formal organization and reason about communication.  
+
+### Evaluate Communication Costs
+
+To identify the main developer of a module, we could look at the number of lines add, but it could promote some kind of "copy-paste Cowboys".  
+Code Maat propose the `refactoring-main-dev` analysis to identify the developer who removed the more lines of codes as it is probably someone who takes an active part in module maintenance and refactoring.  
+
+To identify the main developers: `maat -l hib_evo.log -c -git -a main-dev > main_devs.csv`  
+We can now identify the main developer and his degree of ownership of both the hotspot and the modules it's coupled to.  
+If those modules are all "owned" by the same person with a strong ownership, then it's ok from the organizational point of view. If it's "owned" by different people, we should consider several things: Are they on the same team? At the office or remotely? On the same time zone?  
+
+To calculate individual contributions: `maat -l hib_evo.log -c -git -a entity-ownership`  
+
+_Author note_: Git "Two commiters name" can influence results, always look at logs and take times to clean it up before running an analysis.  
+
+### Take It Step by Step
+
+To recap:  
+
+1. Identify parallel work
+2. Compare against hotspots
+3. Identity temporal coupling
+4. Find the main developers
+5. Check organizational distance
+6. Optimize for communication
+
+The latest step can be achieved by either changing the organizational structure or the software architecture.  
