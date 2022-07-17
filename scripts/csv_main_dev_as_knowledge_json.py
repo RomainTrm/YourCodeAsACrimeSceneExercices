@@ -16,6 +16,7 @@ import argparse
 import csv
 import json
 import sys
+import re
 
 ######################################################################
 ## Parse input
@@ -46,7 +47,7 @@ class StructuralElement(object):
 		self.name = name
 		self.complexity = complexity
 	def parts(self):
-		return self.name.split('/')
+		return re.split(r"[\/\\]", self.name)
 
 def parse_structural_element(csv_row):
 	name = csv_row[1][2:]
