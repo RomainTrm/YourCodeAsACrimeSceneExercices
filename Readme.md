@@ -401,7 +401,7 @@ Additionally, a large group suffers from _process loss_ and less responsibility 
 
 Adding developers isn't necessarily a bad thing as long as architecture allows them to work on separate pieces of code. Troubles start when some _hotspots_ accumulate responsibilities and force developers to edit the same code for different reasons.  
 
-We can run an author analysis: `maat -l hib_evo.log -c -git -a authors`  
+We can run an author analysis: `maat -l hib_evo.log -c git -a authors`  
 The result is the modules with the number of authors and revisions.  
 
 A study on Windows Vista's code shows that organizational structure add a huge impact on the overall code quality.  
@@ -418,7 +418,7 @@ This famous law can be interpreted in two distinct ways:
 - The reverse one: how to structure organization to match a specific architecture?
 
 To analyze _temporal coupling_ over organizational boundaries, we need to consider commits on the same day as part of a logical change set.  
-To do so: `maat -l hib_evo.log -c -git -a coupling --temporal-period 1`  
+To do so: `maat -l hib_evo.log -c git -a coupling --temporal-period 1`  
 With this analysis, we measure the probability of coupled modules to change within the same day.  
 
 Next step is to identify main developers of coupled modules. We can then compare it to the formal organization and reason about communication.  
@@ -428,11 +428,11 @@ Next step is to identify main developers of coupled modules. We can then compare
 To identify the main developer of a module, we could look at the number of lines add, but it could promote some kind of "copy-paste Cowboys".  
 Code Maat propose the `refactoring-main-dev` analysis to identify the developer who removed the more lines of codes as it is probably someone who takes an active part in module maintenance and refactoring.  
 
-To identify the main developers: `maat -l hib_evo.log -c -git -a main-dev > main_devs.csv`  
+To identify the main developers: `maat -l hib_evo.log -c git -a main-dev > main_devs.csv`  
 We can now identify the main developer and his degree of ownership of both the hotspot and the modules it's coupled to.  
 If those modules are all "owned" by the same person with a strong ownership, then it's ok from the organizational point of view. If it's "owned" by different people, we should consider several things: Are they on the same team? At the office or remotely? On the same time zone?  
 
-To calculate individual contributions: `maat -l hib_evo.log -c -git -a entity-ownership`  
+To calculate individual contributions: `maat -l hib_evo.log -c git -a entity-ownership`  
 
 _Author note_: Git "Two commiters name" can influence results, always look at logs and take times to clean it up before running an analysis.  
 
@@ -448,3 +448,72 @@ To recap:
 6. Optimize for communication
 
 The latest step can be achieved by either changing the organizational structure or the software architecture.  
+
+-----
+
+## Chapter 13 : Build a Knowledge Map of Your System
+
+### Know Your Knowledge Distribution
+
+In previous chapter we've identified authors of a module and measured ownership metrics to identify who may old the most knowledge of this module.  
+But this metric doesn't tell us if there is one main contributor or several ones who maintain overall consistency of the module.  
+To do so, we have to measure individual contributions: `maat -l hib_evo.log -c git -a entity-effort`  
+
+To improve visualization of the result, we can use some [fractal figures](https://github.com/adamtornhill/FractalFigures).  
+
+You can then observe three different patterns:
+
+- Single developer: Easiest pattern, the quality depends only on the expertise of the developer.
+- Multiple, balanced developers: Few developers with a clear ownership of one of them. The more ownership, the fewer defects in the code and better quality.
+- Collective chaos: A lot of minor contributors, this is a strong predictor of defects.
+
+Here we've got an example of modules, we can run the same analysis at the architectural level by specifying boundaries (the `-g` parameter).  
+
+### Grow Your Mental Maps
+
+We can build a map with modules and associated main contributors.  
+In the scala sample directory:
+
+- Run `python -m http.server 8888`  
+- Then open `http://localhost:8888/scala_knowledge.html```
+
+We can now visualize easily whom to ask if we want to work on a specific module.  
+
+### Investigate Knowledge in the Scala Repository
+
+To build such a map:  
+
+- Clone the Scala repository: `git clone https://github.com/scala/scala.git`
+- Check the branch: `git status`, in my case I am on branch _2.13.x_
+- Go back in time for predictable results: ``git checkout `git rev-list -n 1 --before="2013-12-31" origin/2.13.x` ``
+- Extract logs: `git log --pretty=format:'[%h] %an %ad %s' --date=short --numstat --before=2013-11-01 --after=2011-12-31 > scala_evo.log`
+- Extract main devs: `maat -l scala_evo.log -c git -a main-dev > scala_main_devs.csv`
+- Count the number of lines: `cloc ./ --by-file --csv --quiet --report-file=scala_lines.csv`
+
+At this point we have everything we need to build on the map. Note we've limited the period of time as knowledge decrease over time if we don't edit a module.  
+
+We can use tools to generate good color schemes like [ColorBrewer](http://colorbrewer2.org).  
+Colors should be specified by [HTML5 color names](https://www.w3schools.com/tags/ref_colornames.asp).  
+We can then build an author/color mapping like the one in the sample directory.  
+
+Finally, we can build our knowledge map: `python scripts/csv_main_dev_as_knowledge_json.py --structure scala_lines.csv --owners scala_main_devs.csv --authors scala_author_colors.csv > scala_knowledge_131231.json`  
+
+We can now use d3.js to visualize the result (replace in the _scala_knowledge.html_ reference to the file with the one you've generated).  
+
+### Visualize Knowledge Loss
+
+Documentation, reviews, etc, can't replace the intricate knowledge of working on a piece of code. That's why the number of ex-developers who worked on a component is a good predictor of the number of post-release defects.  
+
+In the scala repository, we know that Paul Phillips was a main contributor who chose to leave.  
+Let's identify the abandoned code:  
+
+- Create a new `scala_ex_programmers.csv` with content
+
+```csv
+author,color
+Paul Phillips,green
+```
+
+- Generate the json visualization:  `python scripts/csv_main_dev_as_knowledge_json.py --structure scala_lines.csv --owners scala_main_devs.csv --authors scala_ex_programmers.csv > scala_knowledge_loss.json`  
+
+Now we can visualize every "abandoned" piece of code as the result of Paul's leaving as they appear in green.  
