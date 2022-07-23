@@ -517,3 +517,75 @@ Paul Phillips,green
 - Generate the json visualization:  `python scripts/csv_main_dev_as_knowledge_json.py --structure scala_lines.csv --owners scala_main_devs.csv --authors scala_ex_programmers.csv > scala_knowledge_loss.json`  
 
 Now we can visualize every "abandoned" piece of code as the result of Paul's leaving as they appear in green.  
+
+-----
+
+## Chapter 14 : Dive Deeper with Code Churn
+
+### Cure the Disease, Not the Symptoms
+
+Parallel work is an issue if it occurs on the same modules, merging can be more time consuming than the initial work.  
+Code churn refers to a family of measures indicating the rate at which code evolves.  
+
+### Discover Your Process Loss from Code
+
+By analyzing churn, we can detect problems in our development process.  
+
+To measure code churn trend: `maat -c git -l maat_evo.log -a abs-churn`  
+
+```csv
+date,added,deleted
+2013-08-09,259,20
+2013-08-11,146,70
+2013-08-12,213,79
+2013-08-13,126,23
+2013-08-15,334,118
+...
+```
+
+It returns the added and deleted lines of code per commit date. Values alone aren't interesting, trends are.  
+If we observe unexplained peaks, we must investigate into the source control logs to understand why.  
+
+Code churn patterns:  
+
+- On a stabilizing code base, we expect to have decreasing churn over time.
+- Abnormal peaks means an event occurred, we can also look if there's a time pattern matches organizational events (like the end of a sprint).
+- Increasing code churn is a bad signal. It means code quality is at risk and a high probability of defects is to be expected.
+
+### Investigate the Disposal Sites of Killers and Code
+
+We have to make a lot of decision early in the project life. The tools we have let us spot things when they start moving in the wrong direction, like _temporal coupling_ may highlight unexpected modification patterns.  
+
+To measure code churn per module: `maat -c git -l craft_evo_140808.log -a entity-churn`  
+
+```csv
+entity,added,deleted
+source/Craft.Net.Networking/Packets.cs,4263,3911
+source/Craft.Net.Server/MinecraftServer.cs,727,786
+Craft.Net/Packets.cs,676,186
+source/Craft.Net.Client/Session.cs,638,499
+Craft.Net.Server/MinecraftServer.cs,635,612
+...
+```
+
+Then we can combine it to our previous temporal coupling analysis (on chapter 8). By doing so, we can observe churn on the dependencies of a module.  
+Increasing size of a highly couple dependency is a warning sign and should be addressed rapidly before more architectural decay.  
+
+### Predict Defects  
+
+Code churn isn't a problem, it's a symptom of changing code. But as changing code can result to defects, code churn can be a good predictor.  
+
+So far we used the number of revisions as a metric for hotspot analysis, but it can suffer from some biases:  
+
+- different commit styles
+- long-lived branches
+- squash
+
+To avoid those biases, code churn seems to be a good alternative.  
+To do so, combine the results of an `entity-churn` and a complexity analysis, the overlapping modules can be identified as hotspots.  
+
+Code churn also has its limitations:
+
+- Generated code: can be filtered out
+- Refactoring: code churn doesn't make a distinction between adding new features and refactoring existing ones
+- Superficial changes: renaming, rearranging code, etc.
