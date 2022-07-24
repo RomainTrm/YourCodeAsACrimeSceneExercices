@@ -589,3 +589,29 @@ Code churn also has its limitations:
 - Generated code: can be filtered out
 - Refactoring: code churn doesn't make a distinction between adding new features and refactoring existing ones
 - Superficial changes: renaming, rearranging code, etc.
+
+-----
+
+## Chapter 15 : Toward the Future
+
+### Let Your Questions Guide Your Analysis
+
+Hotspot analysis is the simplest tool we can use, associated with temporal coupling, we can spot architectural decays.  
+If we know well the software, we can also define boundaries to improve our analysis.  
+If we need more data, we can add code churn analysis.  
+And finally, we can analyze the social environment of the software.  
+
+Building a knowledge map is a powerful tool, it keeps track of who holds the knowledge and work as a communication aid.  
+Also, keep an eye on parallel work as they're good candidate for defects, and if needed, act on it at organizational level.  
+
+### Take Other Approaches
+
+We can investigate more than only source code, if we can use everything that is under source control. For example, we can track temporal coupling between a document (maybe containing requirements) and the code.  
+
+The analysis can go beyond file changes granularity, Michael Feathers's [use](https://michaelfeathers.silvrback.com/using-repository-analysis-to-find-single-responsibility-violations) of source control helps him to spot violation of _single responsibility principle_ through some `git`.  
+
+A developer network map can be built from code revisions: each time we edit a piece of code, we get linked with developers who also worked on it, the more editions, the stronger is the link.  
+
+Don't hesitate to build your own tools to match your specific needs. We can also check [Moose](https://moosetechnology.org/) to build analysis.  
+
+Adapt your practices and/or tools to support pair programming.  
