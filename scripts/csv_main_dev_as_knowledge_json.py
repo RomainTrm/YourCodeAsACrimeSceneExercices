@@ -87,12 +87,14 @@ class Knowledge(object):
 		return self.DEFAULT_COLOR
 
 	def owner_of(self, module_name):
+		module_name = module_name.replace("\\", "/")
 		if module_name in self._ownership:
 			o = self._ownership[module_name]
 			return o.main_author
 		return None
 
 	def degree_of_ownership_for(self, module_name):
+		module_name = module_name.replace("\\", "/")
 		if module_name in self._ownership:
 			o = self._ownership[module_name]
 			return o.ownership
