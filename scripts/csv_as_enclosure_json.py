@@ -113,6 +113,7 @@ def module_weight_calculator_from(analysis_results):
 	max_value = max_raw_weight[1]
 	normalized_weights = dict([(name, (1.0 / max_value) * n) for name,n in analysis_results])
 	def normalized_weight_for(module_name):
+		module_name = module_name.replace("\\", "/")
 		if module_name in normalized_weights:
 			return normalized_weights[module_name]
 		return 0.0
@@ -188,6 +189,7 @@ def run(args):
 	structure_input = parse_csv(args.structure, 
 								expected_format='language,filename,blank,comment,code',
 								parse_action=parse_structural_element)
+	
 	weighted_system_structure = generate_structure_from(structure_input, weight_calculator)
 	write_json(weighted_system_structure)
 
