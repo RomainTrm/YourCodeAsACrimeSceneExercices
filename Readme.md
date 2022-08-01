@@ -45,8 +45,29 @@ On this chapter, we run our first analysis on Code-Maat's source code.
 ### Automated mining with Code Maat  
 
 - Mining logs:  `git log --pretty=format:'[%h] %an %ad %s' --date=short --numstat --before=2013-11-01 > maat_evo.log`
-- data first inspection (evaluating number of changes): `maat.bat -l maat_evo.log -c git -a summary`
-- change fequency analysis: `maat.bat -l maat_evo.log -c git -a revisions > maat_freqs.csv`
+- data first inspection (evaluating number of changes): `maat -l maat_evo.log -c git -a summary`
+
+```csv
+statistic,value
+number-of-commits,88
+number-of-entities,45
+number-of-entities-changed,283
+number-of-authors,2
+```
+
+- change fequency analysis: `maat -l maat_evo.log -c git -a revisions > maat_freqs.csv`
+
+```csv
+entity,n-revs
+src/code_maat/analysis/logical_coupling.clj,26
+src/code_maat/app/app.clj,25
+src/code_maat/core.clj,21
+test/code_maat/end_to_end/scenario_tests.clj,20
+project.clj,19
+src/code_maat/parsers/svn.clj,19
+src/code_maat/parsers/git.clj,14
+...
+```
 
 ### Add the Complexity Dimension
 
@@ -55,9 +76,31 @@ Here, we're about to extract the number of lines of code as a complexity metric.
 Tool used for counting lines of code: [Cloc](https://sourceforge.net/projects/cloc/).  
 Extracting number of lines of code: `cloc ./ --by-file --csv --quiet --report-file=maat_lines.csv`
 
+```csv
+language,filename,blank,comment,code
+Clojure,.\src\code_maat\analysis\logical_coupling.clj,23,14,145
+Clojure,.\test\code_maat\end_to_end\scenario_tests.clj,18,19,91
+Clojure,.\test\code_maat\analysis\logical_coupling_test.clj,15,5,89
+Clojure,.\src\code_maat\app\app.clj,13,6,85
+Clojure,.\test\code_maat\parsers\svn_test.clj,7,5,79
+...
+```
+
 ### Merge Complexity and Effort
 
 Merging: `python scripts/merge_comp_freqs.py maat_freqs.csv maat_lines.csv`
+
+```csv
+module,revisions,code
+src\code_maat\analysis\logical_coupling.clj,26,145
+src\code_maat\app\app.clj,25,85
+src\code_maat\core.clj,21,35
+test\code_maat\end_to_end\scenario_tests.clj,20,91
+project.clj,19,17
+src\code_maat\parsers\svn.clj,19,53
+src\code_maat\parsers\git.clj,14,31
+...
+```
 
 -----
 
@@ -71,7 +114,7 @@ Merging: `python scripts/merge_comp_freqs.py maat_freqs.csv maat_lines.csv`
 ### Generate a Version-Control log
 
 - Mining logs (note this time we also set a begining date to limit the scope we want to analyze): `git log --pretty=format:'[%h] %an %ad %s' --date=short --numstat --before=2013-09-05 --after=2012-01-01 > hib_evo.log`
-- Genreate evolutions log: `maat.bat -l hib_evo.log -c git -a summary`
+- Genreate evolutions log: `maat -l hib_evo.log -c git -a summary`
 
 ### Choose a Timespan for your analyses
 
@@ -83,7 +126,7 @@ Merging: `python scripts/merge_comp_freqs.py maat_freqs.csv maat_lines.csv`
 
 Proceed as we did for Code Maat (Chapter 3), extract frequencies, the number of line of code, then merge both:  
 
-- Change fequency analysis: `maat.bat -l hib_evo.log -c git -a revisions > hib_freqs.csv`
+- Change fequency analysis: `maat -l hib_evo.log -c git -a revisions > hib_freqs.csv`
 - Extracting number of lines of code: `cloc ./ --by-file --csv --quiet --report-file=hib_lines.csv`
 - Merging: `python scripts/merge_comp_freqs.py hib_freqs.csv hib_lines.csv`  
 
@@ -124,12 +167,28 @@ Here we'll be using code's shape via indentation to mesure hotspots complexity a
 On the Hibernate folder used on the previous chapter:
 `python scripts/complexity_analysis.py hibernate-core/src/main/java/org/hibernate/cfg/Configuration.java`  
 
+```csv
+n,total,mean,sd,max
+3335,8204.25,2.46,1.6,14.25
+```
+
 ### Analyze Compexity Trends in Hotspots
 
 [Manny Lehman](https://en.wikipedia.org/wiki/Manny_Lehman_%28computer_scientist%29)['s laws of software evolution](https://en.wikipedia.org/wiki/Lehman%27s_laws_of_software_evolution): the more you change the code and add feature, the more code's complexity increases unless specific work is done to reduce it.  
 
 Now, to analyze complexity trends over a period:
 `python scripts/git_complexity_trend.py --start ccc087b --end 46c962e --file hibernate-core/src/main/java/org/hibernate/cfg/Configuration.java`  
+
+```csv
+rev,n,total,mean,sd
+e75b8a77b1,3080,7735.75,2.51,1.73
+23a62802c8,3092,7774.75,2.51,1.73
+89911003e3,3100,7783.75,2.51,1.73
+8373871c30,3101,7783.75,2.51,1.73
+fa1183f3f9,3101,7783.75,2.51,1.73
+...
+```
+
 Then you can use the spreadsheet of your choice to visualize trends with graphs.  
 
 When total complexity increases, it can mean more indentation (and complexity) or more lines of code.  
@@ -161,7 +220,32 @@ You have _temporal coupling_ when modules change together, note that those modul
 
 Sum of Coupling: looking at how many times a module has been coupled to anothers in a commit and sums it up.  
 Mesure the Sum of Coupling: `maat -l maat_evo.log -c git -a soc`  
+
+```csv
+entity,soc
+src/code_maat/app/app.clj,105
+test/code_maat/end_to_end/scenario_tests.clj,97
+src/code_maat/core.clj,93
+project.clj,74
+src/code_maat/analysis/authors.clj,72
+src/code_maat/parsers/svn.clj,67
+...
+```
+
 Mesure the Temporal Coupling: `maat -l maat_evo.log -c git -a coupling`  
+
+```csv
+entity,coupled,degree,average-revs
+src/code_maat/parsers/git.clj,test/code_maat/parsers/git_test.clj,83,12
+src/code_maat/analysis/entities.clj,test/code_maat/analysis/entities_test.clj,76,7
+src/code_maat/analysis/authors.clj,test/code_maat/analysis/authors_test.clj,72,11
+src/code_maat/analysis/logical_coupling.clj,test/code_maat/analysis/logical_coupling_test.clj,66,20
+test/code_maat/analysis/authors_test.clj,test/code_maat/analysis/test_data.clj,66,8
+src/code_maat/parsers/svn.clj,test/code_maat/parsers/svn_test.clj,64,14
+src/code_maat/app/app.clj,src/code_maat/core.clj,60,23
+...
+```
+
 The output is composed of:  
 
 - entity: the coupled module
@@ -402,6 +486,18 @@ Additionally, a large group suffers from _process loss_ and less responsibility 
 Adding developers isn't necessarily a bad thing as long as architecture allows them to work on separate pieces of code. Troubles start when some _hotspots_ accumulate responsibilities and force developers to edit the same code for different reasons.  
 
 We can run an author analysis: `maat -l hib_evo.log -c git -a authors`  
+
+```csv
+entity,n-authors,n-revs
+hibernate-core/src/main/java/org/hibernate/persister/entity/AbstractEntityPersister.java,14,44
+libraries.gradle,11,28
+hibernate-core/src/main/java/org/hibernate/internal/SessionImpl.java,10,39
+hibernate-core/src/main/java/org/hibernate/loader/Loader.java,10,23
+hibernate-core/src/main/java/org/hibernate/mapping/Table.java,9,28
+build.gradle,8,79
+...
+```
+
 The result is the modules with the number of authors and revisions.  
 
 A study on Windows Vista's code shows that organizational structure add a huge impact on the overall code quality.  
@@ -419,6 +515,15 @@ This famous law can be interpreted in two distinct ways:
 
 To analyze _temporal coupling_ over organizational boundaries, we need to consider commits on the same day as part of a logical change set.  
 To do so: `maat -l hib_evo.log -c git -a coupling --temporal-period 1`  
+
+```csv
+entity,coupled,degree,average-revs
+hibernate-core/src/main/java/org/hibernate/persister/entity/EntityPersister.java,hibernate-core/src/test/java/org/hibernate/test/legacy/CustomPersister.java,100,6
+hibernate-core/src/main/java/org/hibernate/persister/entity/EntityPersister.java,hibernate-core/src/test/java/org/hibernate/test/cfg/persister/GoofyPersisterClassProvider.java,92,7
+hibernate-core/src/test/java/org/hibernate/test/cfg/persister/GoofyPersisterClassProvider.java,hibernate-core/src/test/java/org/hibernate/test/legacy/CustomPersister.java,92,7
+...
+```
+
 With this analysis, we measure the probability of coupled modules to change within the same day.  
 
 Next step is to identify main developers of coupled modules. We can then compare it to the formal organization and reason about communication.  
@@ -429,10 +534,39 @@ To identify the main developer of a module, we could look at the number of lines
 Code Maat propose the `refactoring-main-dev` analysis to identify the developer who removed the more lines of codes as it is probably someone who takes an active part in module maintenance and refactoring.  
 
 To identify the main developers: `maat -l hib_evo.log -c git -a main-dev > main_devs.csv`  
+
+```csv
+entity,main-dev,added,total-added,ownership
+.gitignore,Galder Zamarre�o,7,8,0.88
+CONTRIBUTING.md,Steve Ebersole,55,56,0.98
+README.md,Hardy Ferentschik,37,46,0.8
+build.gradle,Steve Ebersole,399,633,0.63
+buildSrc/Readme.md,Steve Ebersole,178,178,1.0
+buildSrc/build.gradle,Strong Liu,8,15,0.53
+...
+```
+
 We can now identify the main developer and his degree of ownership of both the hotspot and the modules it's coupled to.  
 If those modules are all "owned" by the same person with a strong ownership, then it's ok from the organizational point of view. If it's "owned" by different people, we should consider several things: Are they on the same team? At the office or remotely? On the same time zone?  
 
 To calculate individual contributions: `maat -l hib_evo.log -c git -a entity-ownership`  
+
+```csv
+entity,author,added,deleted
+.gitignore,Galder Zamarre�o,7,0
+.gitignore,Strong Liu,1,0
+CONTRIBUTING.md,Steve Ebersole,55,7
+CONTRIBUTING.md,Strong Liu,1,1
+README.md,Strong Liu,6,2
+README.md,Hardy Ferentschik,37,17
+README.md,Steve Ebersole,3,3
+build.gradle,Steve Ebersole,399,291
+build.gradle,Brett Meyer,69,12
+build.gradle,Strong Liu,117,158
+build.gradle,Gunnar Morling,24,2
+build.gradle,brmeyer,7,5
+...
+```
 
 _Author note_: Git "Two commiters name" can influence results, always look at logs and take times to clean it up before running an analysis.  
 
@@ -459,6 +593,21 @@ In previous chapter we've identified authors of a module and measured ownership 
 But this metric doesn't tell us if there is one main contributor or several ones who maintain overall consistency of the module.  
 To do so, we have to measure individual contributions: `maat -l hib_evo.log -c git -a entity-effort`  
 
+```csv
+entity,author,author-revs,total-revs
+.gitignore,Galder Zamarre�o,1,2
+.gitignore,Strong Liu,1,2
+CONTRIBUTING.md,Steve Ebersole,4,5
+CONTRIBUTING.md,Strong Liu,1,5
+README.md,Strong Liu,1,6
+README.md,Hardy Ferentschik,4,6
+README.md,Steve Ebersole,1,6
+build.gradle,Steve Ebersole,48,79
+build.gradle,Brett Meyer,8,79
+build.gradle,Strong Liu,16,79
+...
+```
+
 To improve visualization of the result, we can use some [fractal figures](https://github.com/adamtornhill/FractalFigures).  
 
 You can then observe three different patterns:
@@ -475,7 +624,7 @@ We can build a map with modules and associated main contributors.
 In the scala sample directory:
 
 - Run `python -m http.server 8888`  
-- Then open `http://localhost:8888/scala_knowledge.html```
+- Then open `http://localhost:8888/scala_knowledge.html`
 
 We can now visualize easily whom to ask if we want to work on a specific module.  
 
