@@ -615,3 +615,14 @@ A developer network map can be built from code revisions: each time we edit a pi
 Don't hesitate to build your own tools to match your specific needs. We can also check [Moose](https://moosetechnology.org/) to build analysis.  
 
 Adapt your practices and/or tools to support pair programming.  
+
+-----
+
+## Appendix : Refactoring Hotspots
+
+Small increments is the safest way to improve a design, it allows experimentation and rollbacks.  
+Group functions by tasks will improve cohesion and readability.  
+
+_Wishful thinking_: defer data representation and imagine you have all the functions you need to solve the problem the simplest possible way. It's then about experimentation.  
+
+Do not hesitate to turn off syntax highlighting to avoid distraction during such experimentations.  
